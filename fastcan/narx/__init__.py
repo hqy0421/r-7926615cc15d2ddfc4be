@@ -5,7 +5,7 @@ Nonlinear autoregressive exogenous (NARX) model for system identification.
 # Authors: The fastcan developers
 # SPDX-License-Identifier: MIT
 
-from ._base import NARX
+from ._base import NARX, narx_prediction_diff
 from ._feature import (
     fd2tp,
     gen_poly_features,
@@ -31,6 +31,7 @@ __all__ = [
     "make_poly_ids",
     "make_time_shift_features",
     "make_time_shift_ids",
+    "narx_prediction_diff",
     "print_narx",
     "tp2fd",
 ]

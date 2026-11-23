@@ -326,6 +326,7 @@ class NARX(MultiOutputMixin, RegressorMixin, BaseEstimator):
             "sample_weight": [None, "array-like"],
             "session_sizes": [None, "array-like"],
             "solver": [StrOptions({"least_squares", "minimize"})],
+            "fixed_coef": [None, "array-like"],
         },
         prefer_skip_nested_validation=True,
     )
@@ -337,6 +338,7 @@ class NARX(MultiOutputMixin, RegressorMixin, BaseEstimator):
         coef_init=None,
         session_sizes=None,
         solver="least_squares",
+        fixed_coef=None,
         **params,
     ):
         """
@@ -377,6 +379,40 @@ class NARX(MultiOutputMixin, RegressorMixin, BaseEstimator):
             The SciPy solver for optimization.
 
             .. versionadded:: 0.6.0
+
+        fixed_coef : array-like of shape (n_terms,) or (n_terms + `n_outputs_`,), \
+                default=None
+            Coefficients (and intercept) to be deployed without re-estimation.
+            The values are assigned to :attr:`coef_` and :attr:`intercept_`
+            as given, and no solver is called. As a result, `sample_weight`,
+            `solver`, and `params` are ignored for the coefficient values,
+            but `X`, `y`, and `session_sizes` are still used to infer
+            `n_features_in_`, `n_outputs_`, `max_delay_`, etc.
+
+            This is meant for models whose term structure has been fixed in
+            advance, e.g. by a maintenance team. It makes it possible to
+
+            #. re-estimate only the coefficients of an existing term structure
+               on a new batch of data, by fitting a new :class:`NARX` with the
+               same `feat_ids`/`delay_ids`/`output_ids`, and
+            #. deploy an existing set of coefficients on a fresh instance so
+               that both the old and the new model predict with the *same*
+               term order and the same data window, e.g. to quantify the effect
+               of the new batch.
+
+            If `fit_intercept` is True, the array must have `n_terms +
+            n_outputs_` elements, with the coefficients first and the intercept
+            last (the same convention as `coef_init`). If `fit_intercept` is
+            False, the array must have `n_terms` elements and the intercept is
+            set to zeros. `fixed_coef` cannot be combined with `coef_init`.
+
+            The order of `fixed_coef` follows the order of `feat_ids` and
+            `delay_ids` of this instance; terms are never re-ordered or
+            re-selected. Use :meth:`get_coef` to obtain the array of a fitted
+            model in this layout, and :func:`narx_prediction_diff` to compare
+            two deployments on the same data window.
+
+            .. versionadded:: 0.7.0
 
         **params : dict
             Keyword arguments passed to
@@ -512,6 +548,27 @@ class NARX(MultiOutputMixin, RegressorMixin, BaseEstimator):
             )
 
         self.max_delay_ = self.delay_ids_.max()
+
+        if fixed_coef is not None:
+            if coef_init is not None:
+                raise ValueError(
+                    "`fixed_coef` and `coef_init` cannot be used at the same "
+                    "time. Use `fixed_coef` to deploy coefficients without "
+                    "re-estimation, or `coef_init` to start an optimization."
+                )
+            coef_deployed = _validate_fixed_coef(
+                fixed_coef,
+                n_terms=n_terms,
+                n_outputs=self.n_outputs_,
+                fit_intercept=self.fit_intercept,
+            )
+            if self.fit_intercept:
+                self.coef_ = coef_deployed[: -self.n_outputs_]
+                self.intercept_ = coef_deployed[-self.n_outputs_ :]
+            else:
+                self.coef_ = coef_deployed
+                self.intercept_ = np.zeros(self.n_outputs_, dtype=float)
+            return self
 
         if isinstance(coef_init, (type(None), str)):
             # fit a one-step-ahead NARX model
@@ -1138,6 +1195,37 @@ class NARX(MultiOutputMixin, RegressorMixin, BaseEstimator):
         hessp = jac.T @ (jac @ p) + residual @ d2ydx2p_masked
         return hessp
 
+    def get_coef(self):
+        """Get the coefficients and intercept to deploy on another instance.
+
+        Returns
+        -------
+        coef_intercept : ndarray of shape (n_terms,) or \
+                (n_terms + `n_outputs_`,)
+            The coefficients followed by the intercept when `fit_intercept`
+            is True, and only the coefficients otherwise. The order follows
+            `feat_ids_` and `delay_ids_`.
+
+            The array can be passed directly to
+            :meth:`fit` of another :class:`NARX` with the same term structure
+            as ``fixed_coef``, or to this instance to deploy known
+            coefficients without re-estimation.
+
+        Examples
+        --------
+        >>> import numpy as np
+        >>> from fastcan.narx import NARX
+        >>> X = np.arange(10, dtype=float).reshape(-1, 1)
+        >>> y = 2.0 * X[:, 0] + 1.0
+        >>> narx = NARX(feat_ids=[[-1, 0]], delay_ids=[[-1, 0]]).fit(X, y)
+        >>> np.round(narx.get_coef(), 6)
+        array([2., 1.])
+        """
+        check_is_fitted(self, attributes=["coef_", "intercept_"])
+        if self.fit_intercept:
+            return np.r_[self.coef_, self.intercept_]
+        return np.array(self.coef_, copy=True)
+
     @validate_params(
         {
             "X": ["array-like", Interval(Integral, 1, None, closed="left")],
@@ -1227,6 +1315,138 @@ class NARX(MultiOutputMixin, RegressorMixin, BaseEstimator):
         tags = super().__sklearn_tags__()
         tags.input_tags.allow_nan = True
         return tags
+
+
+@validate_params(
+    {
+        "X": [None, "array-like", Interval(Integral, 1, None, closed="left")],
+        "y_init": [None, "array-like"],
+    },
+    prefer_skip_nested_validation=True,
+)
+def narx_prediction_diff(old_narx, new_narx, X, y_init=None):
+    """Compute the difference between two NARX models on the same data window.
+
+    Both models are evaluated on exactly the same `X` and `y_init`, so the
+    returned difference isolates the effect of the coefficients. The two
+    models must share the same term structure, i.e., `feat_ids_`,
+    `delay_ids_`, `output_ids_`, `max_delay_`, `n_features_in_`, and
+    `n_outputs_`. No term selection is performed.
+
+    A typical use is to deploy an old and a re-estimated set of coefficients
+    on the same structure via :meth:`NARX.fit` (with `fixed_coef`) and then
+    quantify the impact of a new sampling batch as
+    ``new_narx.predict(X, y_init) - old_narx.predict(X, y_init)``.
+
+    Parameters
+    ----------
+    old_narx : NARX
+        The reference (e.g., old) NARX model.
+
+    new_narx : NARX
+        The NARX model to compare against `old_narx`, e.g. the model whose
+        coefficients were re-estimated on a new batch.
+
+    X : array-like of shape (n_samples, `n_features_in_`) or int
+        Input data shared by both models. An integer is only allowed for
+        autoregressive models (i.e., `n_features_in_` is 0), where it indicates
+        the total number of steps to predict. See :meth:`NARX.predict`.
+
+    y_init : array-like of shape (n_init,) or (n_init, `n_outputs_`), default=None
+        Initial values shared by both models. See :meth:`NARX.predict`.
+
+    Returns
+    -------
+    y_diff : array-like of shape (n_samples,) or (n_samples, `n_outputs_`)
+        The prediction of `new_narx` minus the prediction of `old_narx`.
+        The number of dimensions matches the `y` seen in :meth:`NARX.fit`.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> from fastcan.narx import NARX, narx_prediction_diff
+    >>> rng = np.random.default_rng(0)
+    >>> u = rng.uniform(0, 1, 200)
+    >>> y = 0.7 * u + 1
+    >>> X = u.reshape(-1, 1)
+    >>> feat_ids = [[-1, 0]]
+    >>> delay_ids = [[-1, 0]]
+    >>> old = NARX(feat_ids=feat_ids, delay_ids=delay_ids).fit(X, y)
+    >>> new = NARX(feat_ids=feat_ids, delay_ids=delay_ids).fit(
+    ...     X, y, fixed_coef=np.r_[old.coef_, old.intercept_ + 0.1])
+    >>> np.allclose(narx_prediction_diff(old, new, X), 0.1)
+    True
+    """
+    check_is_fitted(old_narx, attributes=["coef_", "intercept_"])
+    check_is_fitted(new_narx, attributes=["coef_", "intercept_"])
+    _check_same_structure(old_narx, new_narx)
+    return new_narx.predict(X, y_init=y_init) - old_narx.predict(X, y_init=y_init)
+
+
+def _check_same_structure(narx_a, narx_b):
+    """Raise if two fitted NARX models have different term structures."""
+    for attr in ("feat_ids_", "delay_ids_", "output_ids_"):
+        a = getattr(narx_a, attr)
+        b = getattr(narx_b, attr)
+        if a.shape != b.shape or not np.array_equal(a, b):
+            raise ValueError(
+                f"The two NARX models have different term structures: "
+                f"`{attr}` is {a.tolist()} for the first model but "
+                f"{b.tolist()} for the second. Both models must share the "
+                "same term order to compare predictions on the same window."
+            )
+    for attr in ("max_delay_", "n_features_in_", "n_outputs_", "_y_ndim"):
+        a = getattr(narx_a, attr)
+        b = getattr(narx_b, attr)
+        if a != b:
+            raise ValueError(
+                f"The two NARX models have different term structures: "
+                f"`{attr}` is {a} for the first model but {b} for the second."
+            )
+    if narx_a.fit_intercept != narx_b.fit_intercept:
+        raise ValueError(
+            "The two NARX models have different `fit_intercept` settings: "
+            f"{narx_a.fit_intercept} and {narx_b.fit_intercept}."
+        )
+
+
+def _validate_fixed_coef(fixed_coef, n_terms, n_outputs, fit_intercept):
+    """Validate the coefficients to be deployed without re-estimation.
+
+    Accepts either the ``coef_init`` convention, i.e., coefficients followed
+    by the intercept when ``fit_intercept`` is True, or the ``coef`` convention,
+    i.e., only coefficients when ``fit_intercept`` is False.
+    """
+    fixed_coef = check_array(
+        fixed_coef,
+        ensure_2d=False,
+        dtype=float,
+        ensure_all_finite=True,
+        copy=True,
+    )
+    if fixed_coef.ndim != 1:
+        raise ValueError(
+            "`fixed_coef` should be a 1-dimensional array, but got an array "
+            f"with shape {fixed_coef.shape}."
+        )
+    if fit_intercept:
+        n_expected = n_terms + n_outputs
+        hint = (
+            "The last `n_outputs_` elements are interpreted as the intercept. "
+            "Use `np.r_[coef, intercept]` or `np.r_[narx.coef_, narx.intercept_]`."
+        )
+    else:
+        n_expected = n_terms
+        hint = (
+            "Since `fit_intercept=False`, only the coefficients are expected "
+            "and the intercept is set to zeros."
+        )
+    if fixed_coef.shape[0] != n_expected:
+        raise ValueError(
+            "`fixed_coef` should have the shape of "
+            f"({(n_expected,)}), but got {fixed_coef.shape}. {hint}"
+        )
+    return fixed_coef
 
 
 def _validate_session_sizes(session_sizes, n_samples):

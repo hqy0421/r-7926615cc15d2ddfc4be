@@ -153,3 +153,62 @@ but the multiple-step-ahead prediction can be used by setting the parameter `coe
 .. rubric:: Examples
 
 * See :ref:`sphx_glr_auto_examples_plot_narx_msa.py` for an illustration of the multiple-step-ahead NARX model.
+
+Deploying coefficients on a fixed term structure
+================================================
+
+In some workflows, e.g., in model maintenance, the term structure of a NARX model is
+fixed in advance and only the coefficients are re-estimated when a new batch of data
+becomes available. To compare the effect of the new batch, it is necessary to
+
+#. re-estimate only the coefficients without re-selecting or re-ordering the terms,
+#. deploy an old and a new set of coefficients on the *same* term structure, and
+#. evaluate both models on the *same* data window.
+
+Re-estimating the coefficients of a fixed structure is simply a :meth:`NARX.fit` with
+the same `feat_ids`, `delay_ids`, and `output_ids`, but on the new batch. The term order
+is taken from the instance and never re-selected.
+
+Deploying a set of coefficients without estimating them is done by :meth:`NARX.fit` with
+`fixed_coef`. The array follows the `feat_ids`/`delay_ids` order, and is produced
+conveniently by :meth:`NARX.get_coef`:
+
+.. code-block:: python
+
+    >>> import numpy as np
+    >>> from fastcan.narx import NARX, narx_prediction_diff
+    >>> # A fixed term structure given by the maintenance team
+    >>> feat_ids = [[-1, 0], [0, 0]]  # y(k-1), X(k)^2
+    >>> delay_ids = [[-1, 1], [0, 0]]
+    >>> rng = np.random.default_rng(0)
+    >>> u = rng.uniform(0, 1, 301)
+    >>> y_old = 0.7 * u + 2 * u**2
+    >>> y_new = 0.8 * u + 2.1 * u**2
+    >>> X_old = u[:200].reshape(-1, 1)
+    >>> X_new = u[200:].reshape(-1, 1)
+    >>> old_model = NARX(feat_ids=feat_ids, delay_ids=delay_ids).fit(X_old, y_old[:200])
+    >>> # Re-estimate only the coefficients on the new batch
+    >>> new_model = NARX(feat_ids=feat_ids, delay_ids=delay_ids).fit(X_new, y_new[200:])
+    >>> # Deploy the old coefficients on a fresh instance, no estimation
+    >>> old_deployed = NARX(feat_ids=feat_ids, delay_ids=delay_ids).fit(
+    ...     X_new, y_new[200:], fixed_coef=old_model.get_coef())
+    >>> # Compare old and new on the same data window
+    >>> y_diff = narx_prediction_diff(old_deployed, new_model, X_new)
+    >>> bool(y_diff.shape == (101,))
+    True
+
+`fixed_coef` accepts the coefficients followed by the intercept when `fit_intercept`
+is True (the same layout as :meth:`NARX.get_coef` and `coef_init`), or only the
+coefficients when `fit_intercept` is False. Passing `fixed_coef` skips the solver
+entirely, so `sample_weight`, `solver`, and other optimiser arguments have no effect
+on the coefficients; `X`, `y`, and `session_sizes` are still used to infer the
+model metadata, such as `n_features_in_` and `max_delay_`.
+
+.. note::
+    `fixed_coef` and `coef_init` cannot be used at the same time. Use `fixed_coef`
+    to deploy known coefficients, and `coef_init` to start an optimisation.
+
+:func:`narx_prediction_diff` requires both models to share the same term structure,
+and evaluates them on the same `X` and `y_init`. It raises an error if the structures
+differ, so a comparison can never silently mix different term orders.
+

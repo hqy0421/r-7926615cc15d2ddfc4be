@@ -1,0 +1,300 @@
+Build started at 2026-11-24T00:58:15.222771
+Main binary: /opt/venv/bin/python3
+Build Options: -Dbuildtype=release -Db_ndebug=if-release -Db_vscrt=md -Dvsenv=true --native-file=/workspace/build/cp311/meson-python-native-file.ini
+Python system: Linux
+The Meson build system
+Version: 1.12.1
+Source dir: /workspace
+Build dir: /workspace/build/cp311
+Build type: native build
+Project name: fastcan
+Project version: 0.7.0.dev0
+-----------
+Detecting compiler via: `cc --version` -> 0
+stdout:
+cc (Debian 12.2.0-14+deb12u1) 12.2.0
+Copyright (C) 2022 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+-----------
+Running command: -cpp -x c -E -dM -
+-----
+-----------
+Detecting linker via: `cc -Wl,--version` -> 0
+stdout:
+GNU ld (GNU Binutils for Debian) 2.40
+Copyright (C) 2023 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms of
+the GNU General Public License version 3 or (at your option) a later version.
+This program has absolutely no warranty.
+-----------
+stderr:
+collect2 version 12.2.0
+/usr/bin/ld -plugin /usr/lib/gcc/x86_64-linux-gnu/12/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/12/lto-wrapper -plugin-opt=-fresolution=/tmp/cc3Z7f1J.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie /usr/lib/gcc/x86_64-linux-gnu/12/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/12/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/12/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/12 -L/usr/lib/gcc/x86_64-linux-gnu/12/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/12/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/12/../../.. --version -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /usr/lib/gcc/x86_64-linux-gnu/12/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/12/../../../x86_64-linux-gnu/crtn.o
+-----------
+Sanity check compiler command line: cc -o sanity_check_for_c.exe sanity_check_for_c.c -D_FILE_OFFSET_BITS=64
+Sanity check compile stdout:
+
+-----
+Sanity check compile stderr:
+
+-----
+Sanity check built target output for host machine c compiler
+ -- Running test binary command:  /workspace/build/cp311/meson-private/sanity_check_for_c.exe
+-----------
+Sanity check: `/workspace/build/cp311/meson-private/sanity_check_for_c.exe` -> 0
+ -- stdout:
+ 
+ -- stderr:
+ 
+ -- returncode: 0
+C compiler for the host machine: cc (gcc 12.2.0 "cc (Debian 12.2.0-14+deb12u1) 12.2.0")
+C linker for the host machine: cc ld.bfd 2.40
+-----------
+Detecting archiver via: `gcc-ar --version` -> 0
+stdout:
+GNU ar (GNU Binutils for Debian) 2.40
+Copyright (C) 2023 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms of
+the GNU General Public License version 3 or (at your option) any later version.
+This program has absolutely no warranty.
+-----------
+-----------
+Detecting compiler via: `cython -V` -> 0
+stdout:
+Cython version 3.3.1
+-----------
+stderr:
+Cython version 3.3.1
+-----------
+Sanity check transpiler command line: cython --fast-fail -o sanity_check_for_cython.c sanity_check_for_cython.pyx -3
+Sanity check transpiler stdout:
+
+-----
+Sanity check transpiler stderr:
+
+-----
+Pkg-config binary missing from cross or native file, or env var undefined.
+Trying a default Pkg-config fallback at pkg-config
+Found pkg-config: YES (/usr/bin/pkg-config) 1.8.1
+Determining dependency 'python3' with pkg-config executable '/usr/bin/pkg-config'
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --modversion python3` -> 0
+stdout:
+3.11
+-----------
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --cflags python3` -> 0
+stdout:
+-I/usr/include/python3.11 -I/usr/include/x86_64-linux-gnu/python3.11
+-----------
+env[PKG_CONFIG_ALLOW_SYSTEM_LIBS]: 1
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --libs python3` -> 0
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --libs python3` -> 0
+Run-time dependency python3 found: YES 3.11
+checking compilation of transpiled source:
+Sanity check compiler command line: cc -o sanity_check_for_cython.so sanity_check_for_cython.c -D_FILE_OFFSET_BITS=64 -fPIC -I/usr/include/python3.11 -I/usr/include/x86_64-linux-gnu/python3.11 -shared -Wl,--allow-shlib-undefined
+Sanity check compile stdout:
+
+-----
+Sanity check compile stderr:
+
+-----
+Cython compiler for the host machine: cython (cython 3.3.1)
+-----------
+Detecting compiler via: `cc --version` -> 0
+stdout:
+cc (Debian 12.2.0-14+deb12u1) 12.2.0
+Copyright (C) 2022 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+-----------
+Running command: -cpp -x c -E -dM -
+-----
+-----------
+Detecting linker via: `cc -Wl,--version` -> 0
+stdout:
+GNU ld (GNU Binutils for Debian) 2.40
+Copyright (C) 2023 Free Software Foundation, Inc.
+This program is free software; you may redistribute it under the terms of
+the GNU General Public License version 3 or (at your option) a later version.
+This program has absolutely no warranty.
+-----------
+stderr:
+collect2 version 12.2.0
+/usr/bin/ld -plugin /usr/lib/gcc/x86_64-linux-gnu/12/liblto_plugin.so -plugin-opt=/usr/lib/gcc/x86_64-linux-gnu/12/lto-wrapper -plugin-opt=-fresolution=/tmp/cc60asrp.res -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s -plugin-opt=-pass-through=-lc -plugin-opt=-pass-through=-lgcc -plugin-opt=-pass-through=-lgcc_s --build-id --eh-frame-hdr -m elf_x86_64 --hash-style=gnu --as-needed -dynamic-linker /lib64/ld-linux-x86-64.so.2 -pie /usr/lib/gcc/x86_64-linux-gnu/12/../../../x86_64-linux-gnu/Scrt1.o /usr/lib/gcc/x86_64-linux-gnu/12/../../../x86_64-linux-gnu/crti.o /usr/lib/gcc/x86_64-linux-gnu/12/crtbeginS.o -L/usr/lib/gcc/x86_64-linux-gnu/12 -L/usr/lib/gcc/x86_64-linux-gnu/12/../../../x86_64-linux-gnu -L/usr/lib/gcc/x86_64-linux-gnu/12/../../../../lib -L/lib/x86_64-linux-gnu -L/lib/../lib -L/usr/lib/x86_64-linux-gnu -L/usr/lib/../lib -L/usr/lib/gcc/x86_64-linux-gnu/12/../../.. --version -lgcc --push-state --as-needed -lgcc_s --pop-state -lc -lgcc --push-state --as-needed -lgcc_s --pop-state /usr/lib/gcc/x86_64-linux-gnu/12/crtendS.o /usr/lib/gcc/x86_64-linux-gnu/12/../../../x86_64-linux-gnu/crtn.o
+-----------
+Sanity check compiler command line: cc -o sanity_check_for_c.exe sanity_check_for_c.c -D_FILE_OFFSET_BITS=64
+Sanity check compile stdout:
+
+-----
+Sanity check compile stderr:
+
+-----
+Sanity check built target output for build machine c compiler
+ -- Running test binary command:  /workspace/build/cp311/meson-private/sanity_check_for_c.exe
+-----------
+Sanity check: `/workspace/build/cp311/meson-private/sanity_check_for_c.exe` -> 0
+ -- stdout:
+ 
+ -- stderr:
+ 
+ -- returncode: 0
+C compiler for the build machine: cc (gcc 12.2.0 "cc (Debian 12.2.0-14+deb12u1) 12.2.0")
+C linker for the build machine: cc ld.bfd 2.40
+-----------
+Detecting compiler via: `cython -V` -> 0
+stdout:
+Cython version 3.3.1
+-----------
+stderr:
+Cython version 3.3.1
+-----------
+Sanity check transpiler command line: cython --fast-fail -o sanity_check_for_cython.c sanity_check_for_cython.pyx -3
+Sanity check transpiler stdout:
+
+-----
+Sanity check transpiler stderr:
+
+-----
+Pkg-config binary missing from cross or native file, or env var undefined.
+Trying a default Pkg-config fallback at pkg-config
+Found pkg-config: YES (/usr/bin/pkg-config) 1.8.1
+Determining dependency 'python3' with pkg-config executable '/usr/bin/pkg-config'
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --modversion python3` -> 0
+stdout:
+3.11
+-----------
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --cflags python3` -> 0
+stdout:
+-I/usr/include/python3.11 -I/usr/include/x86_64-linux-gnu/python3.11
+-----------
+env[PKG_CONFIG_ALLOW_SYSTEM_LIBS]: 1
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --libs python3` -> 0
+env[PKG_CONFIG_PATH]: 
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --libs python3` -> 0
+Build-time dependency python3 found: YES 3.11
+checking compilation of transpiled source:
+Sanity check compiler command line: cc -o sanity_check_for_cython.so sanity_check_for_cython.c -D_FILE_OFFSET_BITS=64 -fPIC -I/usr/include/python3.11 -I/usr/include/x86_64-linux-gnu/python3.11 -shared -Wl,--allow-shlib-undefined
+Sanity check compile stdout:
+
+-----
+Sanity check compile stderr:
+
+-----
+Cython compiler for the build machine: cython (cython 3.3.1)
+Build machine cpu family: x86_64
+Build machine cpu: x86_64
+Host machine cpu family: x86_64
+Host machine cpu: x86_64
+Target machine cpu family: x86_64
+Target machine cpu: x86_64
+Program python found: YES (/task-cache/venv/bin/python)
+Running compile:
+Working directory:  /tmp/tmp7_i13rmw
+Code:
+
+        
+        #ifndef _OPENMP
+        # define _OPENMP "MESON_GET_DEFINE_UNDEFINED_SENTINEL"
+        #endif
+        "MESON_GET_DEFINE_DELIMITER_START"
+_OPENMP
+"MESON_GET_DEFINE_DELIMITER_END"
+-----------
+Command line: `cc /tmp/tmp7_i13rmw/testfile.c -E -P -fopenmp -D_FILE_OFFSET_BITS=64 -P -O0 -U_FORTIFY_SOURCE` -> 0
+stdout:
+"MESON_GET_DEFINE_DELIMITER_START"
+201511
+"MESON_GET_DEFINE_DELIMITER_END"
+-----------
+Running compile:
+Working directory:  /workspace/build/cp311/meson-private/tmp8zlcnlpr
+Code:
+
+        #ifdef __has_include
+         #if !__has_include("omp.h")
+          #error "Header 'omp.h' could not be found"
+         #endif
+        #else
+         #include <omp.h>
+        #endif
+-----------
+Command line: `cc /workspace/build/cp311/meson-private/tmp8zlcnlpr/testfile.c -E -P -fopenmp -D_FILE_OFFSET_BITS=64 -P -O0 -U_FORTIFY_SOURCE` -> 0
+Run-time dependency OpenMP for c found: YES 4.5
+Searching for '/usr/lib/x86_64-linux-gnu/pkgconfig' via pkgconfig lookup in LIBPC
+Pkg-config binary missing from cross or native file, or env var undefined.
+Trying a default Pkg-config fallback at pkg-config
+Found pkg-config: YES (/usr/bin/pkg-config) 1.8.1
+Determining dependency 'python-3.11' with pkg-config executable '/usr/bin/pkg-config'
+env[PKG_CONFIG_PATH]: /usr/lib/x86_64-linux-gnu/pkgconfig
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --modversion python-3.11` -> 0
+stdout:
+3.11
+-----------
+env[PKG_CONFIG_PATH]: /usr/lib/x86_64-linux-gnu/pkgconfig
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --cflags python-3.11` -> 0
+stdout:
+-I/usr/include/python3.11 -I/usr/include/x86_64-linux-gnu/python3.11
+-----------
+env[PKG_CONFIG_ALLOW_SYSTEM_LIBS]: 1
+env[PKG_CONFIG_PATH]: /usr/lib/x86_64-linux-gnu/pkgconfig
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --libs python-3.11` -> 0
+env[PKG_CONFIG_PATH]: /usr/lib/x86_64-linux-gnu/pkgconfig
+env[PKG_CONFIG]: /usr/bin/pkg-config
+-----------
+Called: `/usr/bin/pkg-config --libs python-3.11` -> 0
+Run-time dependency python found: YES 3.11
+Build targets in project: 2
+
+fastcan 0.7.0.dev0
+
+  User defined options
+    Native files: /workspace/build/cp311/meson-python-native-file.ini
+    b_ndebug    : if-release
+    b_vscrt     : md
+    buildtype   : release
+    vsenv       : true
+
+Found ninja-1.13.2.git.kitware.jobserver-pipe-1 at /opt/venv/bin/ninja
+
+Visual Studio environment is needed to run Ninja. It is recommended to use Meson wrapper:
+/opt/venv/bin/meson compile -C .
+Running compile:
+Working directory:  /workspace/build/cp311/meson-private/tmpbhgcy24u
+Code:
+
+-----------
+Command line: `cc /workspace/build/cp311/meson-private/tmpbhgcy24u/testfile.c -o /workspace/build/cp311/meson-private/tmpbhgcy24u/output.obj -c -D_FILE_OFFSET_BITS=64 -O0 -U_FORTIFY_SOURCE --print-search-dirs` -> 0
+stdout:
+install: /usr/lib/gcc/x86_64-linux-gnu/12/
+programs: =/usr/lib/gcc/x86_64-linux-gnu/12/:/usr/lib/gcc/x86_64-linux-gnu/12/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/12/:/usr/lib/gcc/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/12/../../../../x86_64-linux-gnu/bin/x86_64-linux-gnu/12/:/usr/lib/gcc/x86_64-linux-gnu/12/../../../../x86_64-linux-gnu/bin/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/12/../../../../x86_64-linux-gnu/bin/
+libraries: =/usr/lib/gcc/x86_64-linux-gnu/12/:/usr/lib/gcc/x86_64-linux-gnu/12/../../../../x86_64-linux-gnu/lib/x86_64-linux-gnu/12/:/usr/lib/gcc/x86_64-linux-gnu/12/../../../../x86_64-linux-gnu/lib/x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/12/../../../../x86_64-linux-gnu/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/12/../../../x86_64-linux-gnu/12/:/usr/lib/gcc/x86_64-linux-gnu/12/../../../x86_64-linux-gnu/:/usr/lib/gcc/x86_64-linux-gnu/12/../../../../lib/:/lib/x86_64-linux-gnu/12/:/lib/x86_64-linux-gnu/:/lib/../lib/:/usr/lib/x86_64-linux-gnu/12/:/usr/lib/x86_64-linux-gnu/:/usr/lib/../lib/:/usr/lib/gcc/x86_64-linux-gnu/12/../../../../x86_64-linux-gnu/lib/:/usr/lib/gcc/x86_64-linux-gnu/12/../../../:/lib/:/usr/lib/
+-----------
